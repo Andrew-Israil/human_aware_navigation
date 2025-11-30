@@ -1,0 +1,5 @@
+<library path="nav2_human_dynamic_layer_costmap_plugin_core">
+  <class name="nav2_human_dynamic_layer_costmap_plugin::HumanDynamicLayer" type="nav2_human_dynamic_layer_costmap_plugin::HumanDynamicLayer" base_class_type="nav2_costmap_2d::Layer">
+    <description>Human dynamic layer package will be added to costmap2d using this plugin</description>
+  </class>
+</library>

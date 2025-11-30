@@ -1,0 +1,5 @@
+nav_msgs/Path     invalid_path
+---
+bool        replan
+bool        cancel_control
+int32       waiting_time   0
