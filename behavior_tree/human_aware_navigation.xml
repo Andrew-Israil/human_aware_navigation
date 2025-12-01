@@ -1,0 +1,55 @@
+<root main_tree_to_execute="MainTree">
+  <BehaviorTree ID="MainTree">
+    <RecoveryNode number_of_retries="20" name="NavigateRecovery">
+      <PipelineSequence name="NavigateWithReplanning">
+        <RateController hz="1.0">
+          <Fallback> 
+            <ReactiveSequence>
+              <Inverter>
+                <GlobalUpdatedGoal/>
+              </Inverter>
+              <PathValidityCheck path="{path}" cancel_control="{cancel_control}"  waiting_time="{waiting_time}"/>
+            </ReactiveSequence>
+            <Sequence>
+              <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+              <CancelWait/>
+            </Sequence>
+          </Fallback>
+        </RateController>
+        <ReactiveSequence name="MonitorAndFollowPath">
+          <Fallback>
+            <Inverter>
+              <CancelControlCondition cancel_control="{cancel_control}"/>
+            </Inverter>
+            <RetryUntilSuccessful num_attempts="1">
+              <SequenceStar>
+                <CancelControl name="ControlCancel"/>
+                <ComputePathToPose goal="{goal}" path="{new_path}" planner_id="GridBased"/>
+                <Fallback>
+                  <DetourFasterCondition waiting_time="{waiting_time}" average_velocity ="1" angular_velocity="1.8" old_path="{path}" new_path="{new_path}" path="{path}"/>
+                  <SequenceStar>
+                    <DynamicWait wait_duration="{waiting_time}"/>
+                    <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+                  </SequenceStar>
+                </Fallback>
+              </SequenceStar>
+            </RetryUntilSuccessful> 
+          </Fallback>
+          <RecoveryNode number_of_retries="1" name="IsPathEmpty">
+            <Inverter>
+              <IsPathEmpty path="{path}"/>
+            </Inverter>
+            <ReactiveSequence>
+              <CancelControl name="Cancel"/>
+              <ComputePathToPose goal="{goal}" path="{path}" planner_id="GridBased"/>
+            </ReactiveSequence>
+          </RecoveryNode>
+          <FollowPath path="{path}" controller_id="FollowPath"/>
+        </ReactiveSequence>
+      </PipelineSequence>
+      <ReactiveFallback name="FallbackRecoveries">
+        <Wait wait_duration="1"/>
+      </ReactiveFallback>
+    </RecoveryNode>
+  </BehaviorTree>
+</root>
